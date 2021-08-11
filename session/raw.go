@@ -3,17 +3,22 @@ package session
 import (
 	"database/sql"
 	"strings"
+	"yaorm/dialect"
 	"yaorm/log"
+	"yaorm/schema"
 )
 
 type Session struct {
 	db      *sql.DB
 	sql     strings.Builder
 	sqlVars []interface{}
+
+	refTable *schema.Schema
+	dialect  dialect.Dialect
 }
 
-func New(db *sql.DB) *Session {
-	return &Session{db: db}
+func New(db *sql.DB, d dialect.Dialect) *Session {
+	return &Session{db: db, dialect: d}
 }
 
 func (s *Session) Clear() {
@@ -43,7 +48,7 @@ func (s *Session) Exec() (result sql.Result, err error) {
 	return
 }
 
-func (s *Session) QueryRaw() *sql.Row {
+func (s *Session) QueryRow() *sql.Row {
 	defer s.Clear()
 	s.logSql()
 

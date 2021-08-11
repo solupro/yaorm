@@ -14,6 +14,7 @@ func main() {
 	s := engine.NewSession()
 	_, _ = s.Raw("drop table if exists User;").Exec()
 	_, _ = s.Raw("create table User(name text);").Exec()
+	_, _ = s.Raw("create table User(name text);").Exec()
 	result, _ := s.Raw("insert into User(`name`) values (?), (?)", "solu", "Sam").Exec()
 	count, _ := result.RowsAffected()
 	log.Infof("Exec success, %d affected\n", count)
