@@ -3,6 +3,7 @@ package session
 import (
 	"database/sql"
 	"strings"
+	"yaorm/clause"
 	"yaorm/dialect"
 	"yaorm/log"
 	"yaorm/schema"
@@ -15,6 +16,8 @@ type Session struct {
 
 	refTable *schema.Schema
 	dialect  dialect.Dialect
+
+	clause clause.Clause
 }
 
 func New(db *sql.DB, d dialect.Dialect) *Session {
@@ -24,6 +27,7 @@ func New(db *sql.DB, d dialect.Dialect) *Session {
 func (s *Session) Clear() {
 	s.sql.Reset()
 	s.sqlVars = nil
+	s.clause = clause.Clause{}
 }
 
 func (s *Session) DB() *sql.DB {
