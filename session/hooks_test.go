@@ -1,0 +1,36 @@
+package session
+
+import (
+	"testing"
+	"yaorm/log"
+)
+
+type Account struct {
+	Id       int `yaorm:"PRIMARY KEY"`
+	Password string
+}
+
+func (a *Account) BeforeInsert(s *Session) error {
+	log.Info("before insert,", a)
+	a.Id += 1000
+	return nil
+}
+
+func (a *Account) AfterQuery(s *Session) error {
+	log.Info("after query,", a)
+	a.Password = "******"
+	return nil
+}
+
+func TestSession_CallMethod(t *testing.T) {
+	s := NewSession().Model(&Account{})
+	_ = s.DropTable()
+	_ = s.CreateTable()
+	_, _ = s.Insert(&Account{1, "abc"}, &Account{2, "opq"})
+
+	u := &Account{}
+	err := s.First(u)
+	if nil != err || u.Id != 1001 || u.Password != "******" {
+		t.Fatal("Failed to call hooks after query, got", u)
+	}
+}
