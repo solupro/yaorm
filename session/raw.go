@@ -11,6 +11,7 @@ import (
 
 type Session struct {
 	db      *sql.DB
+	tx      *sql.Tx
 	sql     strings.Builder
 	sqlVars []interface{}
 
@@ -19,6 +20,15 @@ type Session struct {
 
 	clause clause.Clause
 }
+
+type CommonDB interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+var _ CommonDB = (*sql.DB)(nil)
+var _ CommonDB = (*sql.Tx)(nil)
 
 func New(db *sql.DB, d dialect.Dialect) *Session {
 	return &Session{db: db, dialect: d}
@@ -30,7 +40,10 @@ func (s *Session) Clear() {
 	s.clause = clause.Clause{}
 }
 
-func (s *Session) DB() *sql.DB {
+func (s *Session) DB() CommonDB {
+	if nil != s.tx {
+		return s.tx
+	}
 	return s.db
 }
 
@@ -45,7 +58,7 @@ func (s *Session) Exec() (result sql.Result, err error) {
 	defer s.Clear()
 	s.logSql()
 
-	if result, err = s.db.Exec(s.sql.String(), s.sqlVars...); nil != err {
+	if result, err = s.DB().Exec(s.sql.String(), s.sqlVars...); nil != err {
 		log.Error(err)
 	}
 
