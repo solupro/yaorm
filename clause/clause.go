@@ -11,6 +11,9 @@ const (
 	LIMIT
 	WHERE
 	ORDER_BY
+	UPDATE
+	DELETE
+	COUNT
 )
 
 type Clause struct {
